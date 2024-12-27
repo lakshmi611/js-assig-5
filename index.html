@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@200;400&display=swap");
+
+      :root {
+        --primary-color: #22254b;
+        --secondary-color: #373b69;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        background-color: var(--primary-color);
+        font-family: "Poppins", sans-serif;
+        margin: 0;
+      }
+
+      header {
+        padding: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: var(--secondary-color);
+      }
+
+      header h1 {
+        color: #eee;
+        padding: 0;
+        margin: 0;
+        font-size: 1.5rem;
+      }
+
+      .navigation {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+      }
+
+      .navigation a {
+        color: #eee;
+        text-decoration: none;
+        font-size: 1rem;
+        padding: 0.5rem 1rem;
+        border: 1px solid #eee;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+      }
+
+      .navigation a:hover {
+        background-color: var(--primary-color);
+      }
+
+      .username {
+        color: #eee;
+        font-size: 1rem;
+        margin-left: 1rem;
+      }
+
+      .auth-container {
+        display: none;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        color: #eee;
+      }
+
+      .auth-form {
+        background-color: var(--secondary-color);
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        width: 300px;
+      }
+
+      .auth-form h2 {
+        margin-top: 0;
+        margin-bottom: 1rem;
+        text-align: center;
+      }
+
+      .auth-form input {
+        width: 100%;
+        padding: 0.5rem;
+        margin-bottom: 1rem;
+        border: 1px solid #eee;
+        border-radius: 5px;
+        background-color: var(--primary-color);
+        color: #fff;
+      }
+
+      .auth-form button {
+        width: 100%;
+        padding: 0.5rem;
+        background-color: #7378c5;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        font-size: 1rem;
+        cursor: pointer;
+      }
+
+      .auth-form button:hover {
+        background-color: #5c61a3;
+      }
+
+      main {
+        display: none;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .movie {
+        width: 300px;
+        margin: 1rem;
+        background-color: var(--secondary-color);
+        box-shadow: 0 4px 5px rgba(0, 0, 0, 0.2);
+        position: relative;
+        overflow: hidden;
+        border-radius: 3px;
+      }
+
+      .movie img {
+        width: 100%;
+      }
+
+      .movie-info {
+        color: #eee;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.5rem 1rem 1rem;
+        letter-spacing: 0.5px;
+      }
+
+      .movie-info h3 {
+        margin-top: 0;
+      }
+
+      .movie-info span {
+        background-color: var(--primary-color);
+        padding: 0.25rem 0.5rem;
+        border-radius: 3px;
+        font-weight: bold;
+      }
+
+      .movie-info span.green {
+        color: lightgreen;
+      }
+
+      .movie-info span.orange {
+        color: orange;
+      }
+
+      .movie-info span.red {
+        color: red;
+      }
+
+      .overview {
+        background-color: #fff;
+        padding: 2rem;
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        max-height: 100%;
+        transform: translateY(101%);
+        overflow-y: auto;
+        transition: transform 0.3s ease-in;
+      }
+
+      .movie:hover .overview {
+        transform: translateY(0);
+      }
+
+      .footer p {
+        color: #eee;
+        text-align: center;
+      }
+    </style>
+    <title>Movie App</title>
+  </head>
+  <body>
+    <header>
+      <h1>WEB CRAZE</h1>
+      <nav class="navigation">
+        <a href="#" id="home-link">Home</a>
+        <a href="#" id="login-link">Login</a>
+        <a href="#" id="signup-link">Signup</a>
+        <span class="username" id="username-display"></span>
+        <a href="#" id="logout-link" style="display: none;">Logout</a>
+      </nav>
+    </header>
+
+    <div id="auth-login" class="auth-container">
+      <form class="auth-form" id="login-form">
+        <h2>Login</h2>
+        <input type="text" placeholder="Username" id="login-username" required />
+        <input type="password" placeholder="Password" id="login-password" required />
+        <button type="submit">Login</button>
+      </form>
+    </div>
+
+    <div id="auth-signup" class="auth-container">
+      <form class="auth-form" id="signup-form">
+        <h2>Signup</h2>
+        <input type="text" placeholder="Username" id="signup-username" required />
+        <input type="password" placeholder="Password" id="signup-password" required />
+        <button type="submit">Signup</button>
+      </form>
+    </div>
+
+    <main id="main"></main>
+
+    <footer class="footer">
+      <p>
+            
+      </p>
+    </footer>
+
+    <script>
+      const KEY = "3fd2be6f0c70a2a598f084ddfb75487c";
+      const API_URL = `https://api.themoviedb.org/3/discover/movie?sort_by=popularity.desc&api_key=${KEY}&page=1`;
+      const IMG_PATH = "https://image.tmdb.org/t/p/w1280";
+      const SEARCH_API = `https://api.themoviedb.org/3/search/movie?api_key=${KEY}&query=`;
+
+      const main = document.getElementById("main");
+      const loginPage = document.getElementById("auth-login");
+      const signupPage = document.getElementById("auth-signup");
+      const usernameDisplay = document.getElementById("username-display");
+      const logoutLink = document.getElementById("logout-link");
+
+      // Load users from localStorage
+      let users = JSON.parse(localStorage.getItem("users")) || [];
+      let currentUser = null;
+
+      document.getElementById("home-link").addEventListener("click", () => {
+        showSection(main);
+      });
+      document.getElementById("login-link").addEventListener("click", () => {
+        showSection(loginPage);
+      });
+      document.getElementById("signup-link").addEventListener("click", () => {
+        showSection(signupPage);
+      });
+      logoutLink.addEventListener("click", () => {
+        currentUser = null;
+        usernameDisplay.textContent = "";
+        logoutLink.style.display = "none";
+        alert("You have been logged out.");
+        showSection(main);
+      });
+
+      const showSection = (section) => {
+        main.style.display = "none";
+        loginPage.style.display = "none";
+        signupPage.style.display = "none";
+        section.style.display = "flex";
+      };
+
+      const getMovies = async (url) => {
+        const res = await fetch(url);
+        const data = await res.json();
+        showMovies(data.results);
+      };
+
+      const showMovies = (movies) => {
+        main.innerHTML = "";
+        movies.forEach((movie) => {
+          const { title, poster_path, vote_average, overview } = movie;
+          const movieElement = document.createElement("div");
+          movieElement.classList.add("movie");
+          movieElement.innerHTML = `
+            <img src="${IMG_PATH + poster_path}" alt="${title}" />
+            <div class="movie-info">
+              <h3>${title}</h3>
+              <span class="${getClassByRate(vote_average)}">${vote_average}</span>
+            </div>
+            <div class="overview">
+              <h3>Overview</h3>
+              ${overview}
+            </div>
+          `;
+          main.appendChild(movieElement);
+        });
+      };
+
+      const getClassByRate = (vote) => {
+        if (vote >= 7.5) return "green";
+        else if (vote >= 7) return "orange";
+        else return "red";
+      };
+
+      document.getElementById("login-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const username = document.getElementById("login-username").value;
+        const password = document.getElementById("login-password").value;
+
+        const user = users.find(
+          (user) => user.username === username && user.password === password
+        );
+
+        if (user) {
+          alert("Login successful!");
+          currentUser = user;
+          usernameDisplay.textContent = `Logged in as: ${currentUser.username}`;
+          logoutLink.style.display = "block";
+          showSection(main);
+        } else {
+          alert("Invalid username or password.");
+        }
+      });
+
+      document.getElementById("signup-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const username = document.getElementById("signup-username").value;
+        const password = document.getElementById("signup-password").value;
+
+        const userExists = users.some((user) => user.username === username);
+
+        if (userExists) {
+          alert("Username already exists.");
+        } else {
+          users.push({ username, password });
+          localStorage.setItem("users", JSON.stringify(users)); // Save to localStorage
+          alert("Signup successful! Please login.");
+          showSection(loginPage);
+        }
+      });
+
+      // Default to Home section
+      showSection(main);
+      getMovies(API_URL);
+    </script>
+  </body>
+</html>
